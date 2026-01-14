@@ -81,16 +81,24 @@ export default function Home() {
 
             const blob = await response.blob()
 
-            // Validate that blob actually contains data (minimum 100KB for a valid video/audio file)
-            if (blob.size < 100000) {
-                throw new Error('Download failed: File is empty or corrupted. YouTube may have blocked the download.')
+            // Validate that blob actually contains data
+            if (blob.size < 10000) {
+                throw new Error('Download failed: File is empty or corrupted.')
+            }
+
+            // Get filename from Content-Disposition header or create one
+            const contentDisposition = response.headers.get('Content-Disposition')
+            let filename = `${videoInfo.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${quality}p.${format === 'mp3' ? 'mp3' : 'mp4'}`
+
+            if (contentDisposition) {
+                const match = contentDisposition.match(/filename="(.+)"/)
+                if (match) {
+                    filename = match[1]
+                }
             }
 
             const downloadLink = document.createElement('a')
             const objectUrl = URL.createObjectURL(blob)
-
-            const extension = format === 'mp3' ? 'mp3' : 'mp4'
-            const filename = `${videoInfo.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${extension}`
 
             downloadLink.href = objectUrl
             downloadLink.download = filename
@@ -99,7 +107,7 @@ export default function Home() {
             document.body.removeChild(downloadLink)
             URL.revokeObjectURL(objectUrl)
 
-            setSuccess(`Downloaded successfully as ${format.toUpperCase()}! (${(blob.size / 1024 / 1024).toFixed(2)} MB)`)
+            setSuccess(`Downloaded successfully! (${(blob.size / 1024 / 1024).toFixed(2)} MB)`)
         } catch (err: any) {
             setError(err.message || 'Download failed')
         } finally {

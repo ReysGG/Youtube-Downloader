@@ -33,3 +33,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# ytdl-core debug files
+*-player-script.js
+
+# yt-dlp binary
+yt-dlp.exe
